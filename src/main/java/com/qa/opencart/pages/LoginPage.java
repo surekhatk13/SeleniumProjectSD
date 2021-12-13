@@ -59,7 +59,7 @@ public class LoginPage {
 	}
 
 	public boolean doLoginWithWrongCredentials(String un, String pwd) {
-		System.out.println("Try to login with wrong credentials:" +un +":"+pwd);
+		System.out.println("Try to login with wrong credentials...:" +un +":"+pwd);
 		eleutil.doSendKeys(email, un);
 		eleutil.doSendKeys(password, pwd);
 		eleutil.doClick(loginBtn);

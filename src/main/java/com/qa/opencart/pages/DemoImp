@@ -4,6 +4,8 @@ public class DemoImp {
 	public void order() {
 		String name = "potter";
     int a = 10;
+    int b = 20;
+    
     
 		
 	}

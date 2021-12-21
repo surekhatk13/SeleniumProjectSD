@@ -1,59 +1,43 @@
 pipeline 
-    	{
-    agent any	    agent any
-
-
-    stages{	    tools{
-
+{
+    agent any
+    
+    tools{
     	maven 'maven'
-        stage("Build"){	
-            steps{	
-                echo("Build")	
-            }	
-        }	        }
+        }
 
-
-        stage("Run UTs"){	    stages 
-            steps{	    {
-                echo("Run Uts")	        stage('Build') 
+    stages 
+    {
+        stage('Build') 
         {
             steps 
             {
                  git 'https://github.com/jglick/simple-maven-project-with-tests.git'
                  sh "mvn -Dmaven.test.failure.ignore=true clean package"
-            }	            }
-        }	            post 
-
+            }
+            post 
             {
-        stage("Deploy to dev"){	                success 
-            steps{	                {
-                echo("dev deployment")	                    junit '**/target/surefire-reports/TEST-*.xml'
+                success 
+                {
+                    junit '**/target/surefire-reports/TEST-*.xml'
                     archiveArtifacts 'target/*.jar'
                 }
-            }	            }
-        }	        }
-
-
-        stage("Deploy to QA"){	
-            steps{	
-                echo("qa deployment")	
-            }	
-        }	
-
-
-        stage("Run Automation Reg Test"){	        stage('Regression Automation Test') {
-            steps{	            steps {
-                echo("Run Automation Reg Test")	                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+            }
+        }
+        
+        
+        stage('Regression Automation Test') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     git 'https://github.com/naveenanimation20/Sept2021POM.git'
                     sh "mvn clean install"
                 }
-            }	            }
-        }	        }
-
-
-        stage("Deploy to Stage"){	
-            steps{	        stage('Publish Allure Reports') {
-                echo("stage deployment")	           steps {
+            }
+        }
+                
+     
+        stage('Publish Allure Reports') {
+           steps {
                 script {
                     allure([
                         includeProperties: false,
@@ -63,24 +47,20 @@ pipeline
                         results: [[path: '/allure-results']]
                     ])
                 }
-            }	            }
-        }	        }
-
-
-        stage("Deploy to PROD"){	
+            }
+        }
+        
+        
         stage('Publish Extent Report'){
-            steps{	            steps{
-                echo("prod deployment")	                     publishHTML([allowMissing: false,
+            steps{
+                     publishHTML([allowMissing: false,
                                   alwaysLinkToLastBuild: false, 
                                   keepAll: false, 
                                   reportDir: 'build', 
                                   reportFiles: 'TestExecutionReport.html', 
                                   reportName: 'HTML Extent Report', 
                                   reportTitles: ''])
-            }	            }
-        }	        }
-
-    }	    }
-
-} 	} 
- 51  Jenkinsfile_Sample 
+            }
+        }
+    }
+}

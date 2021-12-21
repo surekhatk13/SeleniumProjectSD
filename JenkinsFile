@@ -1,52 +1,86 @@
-pipeline{
-    
-    agent any
-    
-    stages{
-        
-        stage("Build"){
-            steps{
-                echo("Build")
-            }
-        }
-        
-        stage("Run UTs"){
-            steps{
-                echo("Run Uts")
-            }
-        }
-        
-        
-        stage("Deploy to dev"){
-            steps{
-                echo("dev deployment")
-            }
-        }
-        
-        stage("Deploy to QA"){
-            steps{
-                echo("qa deployment")
-            }
-        }
-        
-        stage("Run Automation Reg Test"){
-            steps{
-                echo("Run Automation Reg Test")
-            }
-        }
-        
-        stage("Deploy to Stage"){
-            steps{
-                echo("stage deployment")
-            }
-        }
-        
-        stage("Deploy to PROD"){
-            steps{
-                echo("prod deployment")
-            }
-        }
-        
-    }
-    
-}
+pipeline 
+    	{
+    agent any	    agent any
+
+
+    stages{	    tools{
+
+    	maven 'maven'
+        stage("Build"){	
+            steps{	
+                echo("Build")	
+            }	
+        }	        }
+
+
+        stage("Run UTs"){	    stages 
+            steps{	    {
+                echo("Run Uts")	        stage('Build') 
+        {
+            steps 
+            {
+                 git 'https://github.com/jglick/simple-maven-project-with-tests.git'
+                 sh "mvn -Dmaven.test.failure.ignore=true clean package"
+            }	            }
+        }	            post 
+
+            {
+        stage("Deploy to dev"){	                success 
+            steps{	                {
+                echo("dev deployment")	                    junit '**/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'target/*.jar'
+                }
+            }	            }
+        }	        }
+
+
+        stage("Deploy to QA"){	
+            steps{	
+                echo("qa deployment")	
+            }	
+        }	
+
+
+        stage("Run Automation Reg Test"){	        stage('Regression Automation Test') {
+            steps{	            steps {
+                echo("Run Automation Reg Test")	                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    git 'https://github.com/naveenanimation20/Sept2021POM.git'
+                    sh "mvn clean install"
+                }
+            }	            }
+        }	        }
+
+
+        stage("Deploy to Stage"){	
+            steps{	        stage('Publish Allure Reports') {
+                echo("stage deployment")	           steps {
+                script {
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: '/allure-results']]
+                    ])
+                }
+            }	            }
+        }	        }
+
+
+        stage("Deploy to PROD"){	
+        stage('Publish Extent Report'){
+            steps{	            steps{
+                echo("prod deployment")	                     publishHTML([allowMissing: false,
+                                  alwaysLinkToLastBuild: false, 
+                                  keepAll: false, 
+                                  reportDir: 'build', 
+                                  reportFiles: 'TestExecutionReport.html', 
+                                  reportName: 'HTML Extent Report', 
+                                  reportTitles: ''])
+            }	            }
+        }	        }
+
+    }	    }
+
+} 	} 
+ 51  Jenkinsfile_Sample 
